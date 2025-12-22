@@ -1,6 +1,6 @@
 import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DateRangePicker } from "@/components/common/DateRangePicker"
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Sidebar } from "./Sidebar"
 import {
@@ -43,7 +43,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <DateRangePicker className="hidden sm:block" />
+
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

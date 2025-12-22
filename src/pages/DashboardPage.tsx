@@ -12,6 +12,8 @@ import { downloadCSV, generateDashboardReport } from "@/lib/export"
 import { useDateFilter } from '@/contexts/DateFilterContext'
 import { useMemo } from 'react'
 
+import { DateRangePicker } from "@/components/common/DateRangePicker"
+
 const DashboardPage = () => {
   const { date } = useDateFilter()
 
@@ -69,17 +71,33 @@ const DashboardPage = () => {
 
   const handleDownload = () => {
     const data = generateDashboardReport();
-    downloadCSV(data, "parking-report-" + new Date().toISOString().split('T')[0]);
+    let filename = "parking-report";
+    if (date?.from) {
+        // Format as YYYY-MM-DD
+        const fromStr = date.from.toISOString().split('T')[0];
+        filename += `-${fromStr}`;
+        if (date.to) {
+            const toStr = date.to.toISOString().split('T')[0];
+            filename += `-to-${toStr}`;
+        }
+    } else {
+        filename += `-${new Date().toISOString().split('T')[0]}`;
+    }
+    
+    downloadCSV(data, filename);
   };
 
   return (
     <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-      <div className="flex items-center justify-between space-y-2">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h2 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h2>
-        <Button onClick={handleDownload} className="bg-primary text-white shadow-md hover:bg-primary/90">
-            <Download className="mr-2 h-4 w-4" />
-            Download Report
-        </Button>
+        <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:gap-12 w-full sm:w-auto">
+            <DateRangePicker className="w-full sm:w-[280px]" />
+            <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto h-12 px-10 text-sm font-semibold rounded-2xl">
+                <Download className="mr-3 h-5 w-5" />
+                Download Report
+            </Button>
+        </div>
       </div>
       
       <SummaryCards data={dashboardData.summary} />

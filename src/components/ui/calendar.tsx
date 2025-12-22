@@ -40,7 +40,7 @@ function Calendar({
         
         day: cn(
             buttonVariants({ variant: "ghost" }),
-            "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground"
+            "h-9 w-9 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground transition-all duration-200 ease-in-out"
         ),
         day_range_end: "day-range-end",
         
