@@ -82,7 +82,7 @@ export default function LoginPage() {
                     <p className="text-xs font-semibold text-blue-900 mb-1">Demo Credentials:</p>
                     <div className="space-y-1">
                         <p className="text-[10px] text-blue-700">Admin: <span className="font-mono font-semibold">admin@soulparking.co.id</span> / <span className="font-mono font-semibold">admin123</span></p>
-                        <p className="text-[10px] text-blue-700">Staff: <span className="font-mono font-semibold">user@soulparking.co.id</span> / <span className="font-mono font-semibold">password</span></p>
+                        <p className="text-[10px] text-blue-700">Users: <span className="font-mono font-semibold">user@soulparking.co.id</span> / <span className="font-mono font-semibold">password</span></p>
                     </div>
                 </div>
             </CardHeader>
