@@ -21,6 +21,11 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
 
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage';
+import ManageUsersPage from '@/pages/admin/ManageUsersPage';
+import ManageLocationsPage from '@/pages/admin/ManageLocationsPage';
+import ActivityLogPage from '@/pages/admin/ActivityLogPage';
+
 function App() {
   return (
     <Router>
@@ -30,6 +35,19 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
+          {/* Admin Routes */}
+          <Route element={
+            <ProtectedRoute adminOnly>
+              <DashboardWithLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/users" element={<ManageUsersPage />} />
+            <Route path="/admin/locations" element={<ManageLocationsPage />} />
+            <Route path="/admin/activity" element={<ActivityLogPage />} />
+          </Route>
+
+          {/* User Routes */}
           <Route element={
             <ProtectedRoute>
               <DashboardWithLayout />

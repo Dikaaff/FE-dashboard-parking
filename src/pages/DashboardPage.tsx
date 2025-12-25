@@ -11,6 +11,7 @@ import { downloadCSV, generateDashboardReport } from "@/lib/export"
 
 import { useDateFilter } from '@/contexts/DateFilterContext'
 import { useMemo } from 'react'
+import { toast } from 'sonner'
 
 import { DateRangePicker } from "@/components/common/DateRangePicker"
 
@@ -19,14 +20,11 @@ const DashboardPage = () => {
 
   // Simulate data changing based on date range
   const dashboardData = useMemo(() => {
-    // Seed or simple randomizer based on date strings to make it consistent for same dates
     const seed = date?.from ? date.from.getDate() + date.from.getMonth() * 100 + date.from.getFullYear() : 1;
     const rangeMultiplier = date && date.to && date.from 
         ? Math.max(1, Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24)))
-        : 1;
+        : 7; // Default to 7 days if no range
 
-
-    // Let's make it simple: consistent randomization
     return {
         summary: {
             revenue: 12500000 * rangeMultiplier,
@@ -71,64 +69,53 @@ const DashboardPage = () => {
 
   const handleDownload = () => {
     const data = generateDashboardReport();
-    let filename = "parking-report";
-    if (date?.from) {
-        // Format as YYYY-MM-DD
-        const fromStr = date.from.toISOString().split('T')[0];
-        filename += `-${fromStr}`;
-        if (date.to) {
-            const toStr = date.to.toISOString().split('T')[0];
-            filename += `-to-${toStr}`;
-        }
-    } else {
-        filename += `-${new Date().toISOString().split('T')[0]}`;
-    }
-    
-    downloadCSV(data, filename);
+    downloadCSV(data, `parking-report-custom`);
+    toast.success("Report downloaded successfully");
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in duration-500">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h2>
-        <div className="flex flex-col gap-8 sm:flex-row sm:items-center sm:gap-12 w-full sm:w-auto">
+    <div className="space-y-6 animate-in fade-in zoom-in duration-500 pb-10">
+      <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Analytics Overview</h2>
+            <p className="text-muted-foreground mt-1">Deep dive into your parking facility performance.</p>
+        </div>
+        
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center w-full sm:w-auto">
             <DateRangePicker className="w-full sm:w-[280px]" />
-            <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 w-full sm:w-auto h-12 px-10 text-sm font-semibold rounded-2xl">
-                <Download className="mr-3 h-5 w-5" />
-                Download Report
+            <Button onClick={handleDownload} className="bg-primary hover:bg-primary/90 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 h-12 px-6 rounded-2xl">
+                <Download className="mr-2 h-4 w-4" />
+                Export
             </Button>
         </div>
       </div>
       
       <SummaryCards data={dashboardData.summary} />
       
-      {/* Overview Section */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-bold tracking-tight text-foreground">Overview</h3>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-7">
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 h-full">
-             <IncomeChart data={dashboardData.income} />
-          </div>
-          <div className="col-span-1 md:col-span-2 lg:col-span-3 h-full">
-             <HourlyTrendChart data={dashboardData.hourly} />
-          </div>
-        </div>
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+              {/* Revenue Growth (Renamed Income Chart) */}
+              <div className="space-y-4">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">Revenue Growth</h3>
+                  <IncomeChart data={dashboardData.income} />
+              </div>
 
-       {/* Details Section */}
-       <div className="space-y-4">
-         <h3 className="text-xl font-bold tracking-tight text-foreground">Insights & Demographics</h3>
-         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <div className="col-span-1 h-full">
-             <VehicleChart data={dashboardData.vehicle} />
+              {/* Occupancy Trends */}
+              <div className="space-y-4">
+                  <h3 className="text-xl font-bold tracking-tight text-foreground">Occupancy Trends</h3>
+                  <HourlyTrendChart data={dashboardData.hourly} />
+              </div>
           </div>
-          <div className="col-span-1 h-full">
-              <UserSegmentationChart data={dashboardData.segmentation} />
+
+          <div className="space-y-8">
+                {/* Demographics / Quick Stats */}
+                <div className="space-y-4">
+                    <h3 className="text-xl font-bold tracking-tight text-foreground">Insights</h3>
+                    <UserSegmentationChart data={dashboardData.segmentation} />
+                    <VehicleChart data={dashboardData.vehicle} />
+                    <DurationChart data={dashboardData.duration} />
+                </div>
           </div>
-          <div className="col-span-1 h-full">
-              <DurationChart data={dashboardData.duration} />
-          </div>
-        </div>
       </div>
     </div>
   )

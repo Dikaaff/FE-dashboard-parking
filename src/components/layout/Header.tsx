@@ -18,9 +18,16 @@ import { useNavigate } from "react-router-dom"
 
 import { useAuth } from "@/contexts/AuthContext"
 
+import { LocationSelector } from "../common/LocationSelector"
+
 export function Header() {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+  
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+    : 'SP'
+
   return (
     <header className="flex h-16 items-center justify-between border-b border-border/40 bg-white/80 backdrop-blur-md px-6 shadow-sm sticky top-0 z-20">
       <div className="flex items-center gap-4">
@@ -37,25 +44,25 @@ export function Header() {
         </Sheet>
         
         <h2 className="text-lg font-semibold lg:hidden text-foreground">Soul Parking</h2>
-        <div className="hidden lg:block text-sm text-muted-foreground font-medium">
-           Overview
+        <div className="hidden lg:block text-sm text-muted-foreground font-medium uppercase tracking-wider">
+           {user?.role === 'admin' ? 'Admin Control' : 'Operations'}
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-
+      <div className="flex items-center gap-2 sm:gap-4">
+        <LocationSelector />
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold cursor-pointer hover:bg-primary/20 transition-colors">
-                US
+            <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold cursor-pointer hover:bg-primary/20 transition-colors border border-primary/20">
+                {initials}
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] border-none bg-white/95 backdrop-blur-sm p-2">
+          <DropdownMenuContent align="end" className="w-64 rounded-xl shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)] border-none bg-white/95 backdrop-blur-sm p-2">
             <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">User</p>
-                <p className="text-xs leading-none text-muted-foreground">user@soulparking.co.id</p>
+              <div className="flex flex-col space-y-1 p-1">
+                <p className="text-sm font-bold leading-none">{user?.name || 'User'}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email || 'user@soulparking.co.id'}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-slate-100" />

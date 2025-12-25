@@ -41,7 +41,10 @@ export default function LoginPage() {
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    if (values.email === "user@soulparking.co.id" && values.password === "password") {
+    const isAdmin = values.email === "admin@soulparking.co.id" && values.password === "admin123";
+    const isUser = values.email === "user@soulparking.co.id" && values.password === "password";
+
+    if (isAdmin || isUser) {
         login(values.email)
     } else {
         toast.error("Invalid credentials. Please try again.")
@@ -62,12 +65,9 @@ export default function LoginPage() {
         <Card className="w-full max-w-[400px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white rounded-3xl p-2 sm:p-6">
             <CardHeader className="flex flex-col items-center space-y-4 pb-2">
                 {/* Logo */}
-                <div className="h-16 w-16 mb-2">
-                    <img 
-                        src="/src/assets/logo.png" 
-                        alt="Logo" 
-                        className="h-full w-full object-contain"
-                    />
+                {/* Logo Placeholder */}
+                <div className="h-16 w-16 mb-2 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <span className="text-white font-bold text-2xl">SP</span>
                 </div>
                 
                 <div className="text-center space-y-1.5">
@@ -78,10 +78,12 @@ export default function LoginPage() {
                 </div>
                 
                 {/* Demo Credentials */}
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl w-full">
                     <p className="text-xs font-semibold text-blue-900 mb-1">Demo Credentials:</p>
-                    <p className="text-xs text-blue-700">Email: <span className="font-mono font-semibold">user@soulparking.co.id</span></p>
-                    <p className="text-xs text-blue-700">Password: <span className="font-mono font-semibold">password</span></p>
+                    <div className="space-y-1">
+                        <p className="text-[10px] text-blue-700">Admin: <span className="font-mono font-semibold">admin@soulparking.co.id</span> / <span className="font-mono font-semibold">admin123</span></p>
+                        <p className="text-[10px] text-blue-700">Staff: <span className="font-mono font-semibold">user@soulparking.co.id</span> / <span className="font-mono font-semibold">password</span></p>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="pt-6">

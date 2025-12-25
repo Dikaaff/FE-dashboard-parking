@@ -1,5 +1,5 @@
 import * as React from "react"
-import { addDays, format, startOfMonth, endOfMonth, startOfYear, subMonths, subDays, startOfWeek, endOfWeek, subWeeks } from "date-fns"
+import { format, startOfMonth, endOfMonth, startOfYear, subMonths, subDays, startOfWeek, endOfWeek, subWeeks } from "date-fns"
 import { Calendar as CalendarIcon, Check } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 import { cn } from "@/lib/utils"
@@ -26,14 +26,7 @@ export function DateRangePicker({
     }
   }, [isOpen, date])
 
-  const handleCreate = () => {
-    setDate(tempDate)
-    setIsOpen(false)
-  }
-
-  const handleCancel = () => {
-    setIsOpen(false)
-  }
+  // No manual application needed - updates automatically on selection and month change
   
   const presets = [
     {
@@ -91,7 +84,10 @@ export function DateRangePicker({
   ];
 
   const handlePresetSelect = (preset: { getValue: () => DateRange }) => {
-      setTempDate(preset.getValue());
+      const val = preset.getValue();
+      setTempDate(val);
+      setDate(val);
+      setIsOpen(false);
   }
 
   // Check if a preset is selected
@@ -166,7 +162,20 @@ export function DateRangePicker({
                     mode="range"
                     defaultMonth={tempDate?.from}
                     selected={tempDate}
-                    onSelect={setTempDate}
+                    onMonthChange={(month) => {
+                        const newRange = { from: startOfMonth(month), to: endOfMonth(month) };
+                        setTempDate(newRange);
+                        setDate(newRange);
+                    }}
+                    onSelect={(val) => {
+                        setTempDate(val);
+                        if (val?.from) {
+                            setDate(val);
+                            if (val.to) {
+                                setIsOpen(false);
+                            }
+                        }
+                    }}
                     numberOfMonths={2}
                     className="p-3 border-0 shadow-none rounded-none" 
                     classNames={{
@@ -181,7 +190,7 @@ export function DateRangePicker({
                     }}
                 />
                 
-                 {/* Footer Actions */}
+                 {/* Footer Info (Removed Buttons for Automatic Logic) */}
                 <div className="flex items-center justify-between p-3 border-t border-border/50 bg-white">
                     <p className="text-xs text-muted-foreground">
                         {tempDate?.from ? (
@@ -193,14 +202,9 @@ export function DateRangePicker({
                             "Select a range"
                         )}
                     </p>
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={handleCancel} className="h-8">
-                            Cancel
-                        </Button>
-                        <Button size="sm" onClick={handleCreate} className="h-8 bg-primary hover:bg-primary/90">
-                            Apply
-                        </Button>
-                    </div>
+                    <p className="text-[10px] font-medium text-primary bg-primary/5 px-2 py-1 rounded-full">
+                        Updates automatically
+                    </p>
                 </div>
               </div>
           </div>

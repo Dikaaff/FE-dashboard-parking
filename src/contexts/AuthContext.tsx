@@ -5,6 +5,7 @@ import { toast } from "sonner"
 interface User {
     email: string
     name: string
+    role: 'admin' | 'user'
 }
 
 interface AuthContextType {
@@ -29,11 +30,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, [])
 
     const login = (email: string) => {
-        const newUser = { email, name: "Parking Staff" }
+        const isAdmin = email.toLowerCase() === 'admin@soulparking.co.id'
+        const newUser: User = { 
+            email, 
+            name: isAdmin ? "System Admin" : "Parking Staff",
+            role: isAdmin ? 'admin' : 'user'
+        }
         setUser(newUser)
         localStorage.setItem("user", JSON.stringify(newUser))
-        toast.success("Login successful")
-        navigate("/dashboard")
+        toast.success(`Login successful as ${newUser.role}`)
+        
+        if (isAdmin) {
+            navigate("/admin/dashboard")
+        } else {
+            navigate("/dashboard")
+        }
     }
 
     const logout = () => {

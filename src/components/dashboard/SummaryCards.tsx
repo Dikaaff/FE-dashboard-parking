@@ -60,8 +60,8 @@ export function SummaryCards({ data }: SummaryCardsProps) {
           <CardTitle className="text-sm font-medium text-muted-foreground">
             Current Occupancy
           </CardTitle>
-          <div className="p-2 bg-blue-500/10 rounded-full">
-            <Car className="h-5 w-5 text-blue-500" />
+          <div className="p-2 bg-secondary/10 rounded-full">
+            <Car className="h-5 w-5 text-secondary" />
           </div>
         </CardHeader>
         <CardContent>

@@ -52,12 +52,9 @@ export default function RegisterPage() {
         <Card className="w-full max-w-[400px] border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white rounded-3xl p-2 sm:p-6">
             <CardHeader className="flex flex-col items-center space-y-4 pb-2">
                 {/* Logo */}
-                <div className="h-16 w-16 mb-2">
-                    <img 
-                        src="/src/assets/logo.png" 
-                        alt="Logo" 
-                        className="h-full w-full object-contain"
-                    />
+                {/* Logo Placeholder */}
+                <div className="h-16 w-16 mb-2 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <span className="text-white font-bold text-2xl">SP</span>
                 </div>
                 
                 <div className="text-center space-y-1.5">

@@ -1,7 +1,19 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, FileText, Settings, LogOut, Menu, ChevronLeft } from "lucide-react"
+import { 
+    LayoutDashboard, 
+    FileText, 
+    Settings, 
+    LogOut, 
+    Menu, 
+    ChevronLeft, 
+    Users, 
+    MapPin,
+    ShieldCheck,
+    History
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface SidebarProps {
     className?: string
@@ -11,6 +23,8 @@ interface SidebarProps {
 
 export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps) {
   const location = useLocation()
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
   
   return (
     <div 
@@ -23,7 +37,19 @@ export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps)
       {/* Toggle & Logo Section */}
       <div className={cn("flex items-center py-6 px-4", isCollapsed ? "justify-center" : "justify-between")}>
          {!isCollapsed && (
-             <img src="/src/assets/logo.png" alt="Soul Parking" className="h-8 w-auto object-contain transition-opacity duration-300" />
+             <div className="flex items-center gap-2 overflow-hidden">
+                {isAdmin ? (
+                    <div className="h-10 w-10 rounded-full border-2 border-primary bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                        {/* Photo placeholder for Admin */}
+                        <div className="text-[10px] font-bold text-gray-400">PHOTO</div>
+                    </div>
+                ) : (
+                    <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                        <ShieldCheck className="text-white" size={24} />
+                    </div>
+                )}
+                {!isAdmin && <span className="font-bold text-xl tracking-tight text-foreground whitespace-nowrap">LOGO</span>}
+             </div>
          )}
          <Button 
             variant="ghost" 
@@ -42,38 +68,59 @@ export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps)
         <div className="space-y-2">
             {!isCollapsed && (
                 <h3 className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider animate-in fade-in duration-300">
-                    OVERVIEW
+                    MAIN MENU
                 </h3>
             )}
             <div className="space-y-1">
-                <Link
-                    to="/dashboard"
-                    className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-                        location.pathname === "/dashboard"
-                            ? "bg-primary/5 text-primary font-bold"
-                            : "text-gray-500 hover:text-primary hover:bg-gray-50",
-                        isCollapsed && "justify-center"
-                    )}
-                    title={isCollapsed ? "Dashboard" : ""}
-                >
-                    <LayoutDashboard size={22} className={cn(location.pathname === "/dashboard" ? "text-primary" : "text-gray-400 group-hover:text-primary")} />
-                    {!isCollapsed && <span>Dashboard</span>}
-                </Link>
-                <Link
-                    to="/transactions"
-                    className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-                        location.pathname === "/transactions"
-                             ? "bg-primary/5 text-primary font-bold"
-                            : "text-gray-500 hover:text-primary hover:bg-gray-50",
-                         isCollapsed && "justify-center"
-                    )}
-                    title={isCollapsed ? "Transactions" : ""}
-                >
-                    <FileText size={22} className={cn(location.pathname === "/transactions" ? "text-primary" : "text-gray-400 group-hover:text-primary")} />
-                    {!isCollapsed && <span>Transactions</span>}
-                </Link>
+                {isAdmin ? (
+                    <>
+                        <SidebarLink 
+                            to="/admin/dashboard" 
+                            icon={<LayoutDashboard size={22} />} 
+                            label="Overview" 
+                            active={location.pathname === "/admin/dashboard"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                        <SidebarLink 
+                            to="/admin/users" 
+                            icon={<Users size={22} />} 
+                            label="Users" 
+                            active={location.pathname === "/admin/users"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                        <SidebarLink 
+                            to="/admin/locations" 
+                            icon={<MapPin size={22} />} 
+                            label="Locations" 
+                            active={location.pathname === "/admin/locations"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                        <SidebarLink 
+                            to="/admin/activity" 
+                            icon={<History size={22} />} 
+                            label="Activity Log" 
+                            active={location.pathname === "/admin/activity"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                    </>
+                ) : (
+                    <>
+                        <SidebarLink 
+                            to="/dashboard" 
+                            icon={<LayoutDashboard size={22} />} 
+                            label="Dashboard" 
+                            active={location.pathname === "/dashboard"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                        <SidebarLink 
+                            to="/transactions" 
+                            icon={<FileText size={22} />} 
+                            label="Transactions" 
+                            active={location.pathname === "/transactions"} 
+                            isCollapsed={isCollapsed} 
+                        />
+                    </>
+                )}
             </div>
         </div>
 
@@ -81,24 +128,17 @@ export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps)
         <div className="space-y-2">
             {!isCollapsed && (
                 <h3 className="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider animate-in fade-in duration-300">
-                    SETTINGS
+                    PREFERENCES
                 </h3>
             )}
              <div className="space-y-1">
-                 <Link
-                    to="/settings"
-                    className={cn(
-                        "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
-                        location.pathname === "/settings"
-                             ? "bg-primary/5 text-primary font-bold"
-                            : "text-gray-500 hover:text-primary hover:bg-gray-50",
-                         isCollapsed && "justify-center"
-                    )}
-                    title={isCollapsed ? "Settings" : ""}
-                >
-                    <Settings size={22} className={cn(location.pathname === "/settings" ? "text-primary" : "text-gray-400 group-hover:text-primary")} />
-                    {!isCollapsed && <span>Settings</span>}
-                </Link>
+                <SidebarLink 
+                    to="/settings" 
+                    icon={<Settings size={22} />} 
+                    label="Settings" 
+                    active={location.pathname === "/settings"} 
+                    isCollapsed={isCollapsed} 
+                />
             </div>
         </div>
 
@@ -109,7 +149,7 @@ export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps)
          <Link 
             to="/login" 
             className={cn(
-                "flex items-center gap-3 px-3 py-2 font-medium text-orange-500 hover:text-orange-600 transition-colors group",
+                "flex items-center gap-3 px-3 py-2 font-medium text-primary hover:text-primary/80 transition-colors group",
                  isCollapsed && "justify-center"
             )}
             title={isCollapsed ? "Logout" : ""}
@@ -120,4 +160,33 @@ export function Sidebar({ className, isCollapsed, toggleSidebar }: SidebarProps)
       </div>
     </div>
   )
+}
+
+interface SidebarLinkProps {
+    to: string
+    icon: React.ReactNode
+    label: string
+    active: boolean
+    isCollapsed: boolean
+}
+
+function SidebarLink({ to, icon, label, active, isCollapsed }: SidebarLinkProps) {
+    return (
+        <Link
+            to={to}
+            className={cn(
+                "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group relative",
+                active
+                    ? "bg-primary/5 text-primary font-bold"
+                    : "text-gray-500 hover:text-primary hover:bg-gray-50",
+                isCollapsed && "justify-center"
+            )}
+            title={isCollapsed ? label : ""}
+        >
+            <div className={cn(active ? "text-primary" : "text-gray-400 group-hover:text-primary")}>
+                {icon}
+            </div>
+            {!isCollapsed && <span>{label}</span>}
+        </Link>
+    )
 }

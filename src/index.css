@@ -14,16 +14,16 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 45 91% 57%; /* Vibrant Orange #f4c430 */
+    --primary: 45 91% 57%; /* #f4c430 */
     --primary-foreground: 222.2 47.4% 11.2%;
 
-    --secondary: 224 64% 33%; /* Navy #1e3a8a */
+    --secondary: 224 64% 33%; /* #1e3a8a */
     --secondary-foreground: 210 40% 98%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
+    --accent: 45 87% 62%; /* #f2c94c */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -74,4 +74,38 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom Scrollbar for Mobile and Webkit */
+.scrollbar-primary {
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-primary::-webkit-scrollbar {
+  height: 12px !important;
+  width: 12px !important;
+  display: block !important;
+}
+
+.scrollbar-primary::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+  border-radius: 10px !important;
+  margin: 0 10px !important;
+}
+
+.scrollbar-primary::-webkit-scrollbar-thumb {
+  background: #f4c430 !important;
+  border-radius: 10px !important;
+  border: 3px solid #f1f5f9 !important;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+}
+
+.scrollbar-primary::-webkit-scrollbar-thumb:hover {
+  background: #d4a728 !important;
+}
+
+/* Firefox Support */
+.scrollbar-primary {
+  scrollbar-width: auto;
+  scrollbar-color: #f4c430 #f1f5f9;
 }
