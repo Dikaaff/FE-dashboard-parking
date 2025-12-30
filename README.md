@@ -46,7 +46,7 @@ A modern, high-tech parking management dashboard built with React, TypeScript, a
 ### Demo Credentials
 
 - **Admin**: `admin@soulparking.co.id` / `admin123`
-- **User**: `user@soulparking.co.id` / `password`
+- **Staff**: `user@soulparking.co.id` / `password`
 
 ## Deployment
 

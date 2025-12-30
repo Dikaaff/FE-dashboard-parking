@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Edit2, 
-  Trash2, 
+import {
+  Users,
+  UserPlus,
+  Search,
+  Edit2,
+  Trash2,
   Shield,
   Filter,
   X,
+  Download
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { toast } from 'sonner'
+import { downloadCSV } from "@/lib/export"
 
 interface UserData {
   id: string
@@ -70,8 +72,8 @@ export default function ManageUsersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<UserData | null>(null)
-  
-  const filteredUsers = users.filter(user => 
+
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -85,13 +87,13 @@ export default function ManageUsersPage() {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
     const newUser: UserData = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        role: formData.get('role') as any,
-        assignedLocations: (formData.get('locations') as string).split(','),
-        status: 'active',
-        lastActive: 'Just now'
+      id: Math.random().toString(36).substr(2, 9),
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      role: formData.get('role') as any,
+      assignedLocations: (formData.get('locations') as string).split(','),
+      status: 'active',
+      lastActive: 'Just now'
     }
     setUsers([...users, newUser])
     setIsAddModalOpen(false)
@@ -103,14 +105,27 @@ export default function ManageUsersPage() {
     if (!editingUser) return
     const formData = new FormData(e.currentTarget)
     const updatedUser: UserData = {
-        ...editingUser,
-        name: formData.get('name') as string,
-        email: formData.get('email') as string,
-        role: formData.get('role') as any,
+      ...editingUser,
+      name: formData.get('name') as string,
+      email: formData.get('email') as string,
+      role: formData.get('role') as any,
     }
     setUsers(users.map(u => u.id === editingUser.id ? updatedUser : u))
     setEditingUser(null)
     toast.success("User updated successfully")
+  }
+
+  const handleExport = () => {
+    const data = filteredUsers.map(user => ({
+      Name: user.name,
+      Email: user.email,
+      Role: user.role,
+      Locations: user.assignedLocations.join("; "),
+      Status: user.status,
+      LastActive: user.lastActive
+    }));
+    downloadCSV(data, 'users-list-report');
+    toast.success("User list exported successfully");
   }
 
   return (
@@ -120,13 +135,23 @@ export default function ManageUsersPage() {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">User Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage parking staff accounts and their assigned locations.</p>
         </div>
-        <Button 
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleExport}
+            variant="outline"
+            className="rounded-xl border-gray-200 h-12 px-5 flex items-center gap-2 font-bold text-gray-600 hover:bg-gray-50"
+          >
+            <Download size={18} />
+            <span>Export</span>
+          </Button>
+          <Button
             onClick={() => setIsAddModalOpen(true)}
             className="bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center gap-2 h-12 px-6"
-        >
-          <UserPlus size={18} />
-          <span className="font-bold">Add New User</span>
-        </Button>
+          >
+            <UserPlus size={18} />
+            <span className="font-bold">Add New User</span>
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -137,7 +162,7 @@ export default function ManageUsersPage() {
           <CardContent>
             <div className="text-3xl font-black text-slate-900">{users.length}</div>
             <div className="flex items-center gap-1.5 mt-2">
-               <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-none font-bold">+12% from last month</Badge>
+              <Badge variant="secondary" className="bg-emerald-50 text-emerald-600 border-none font-bold">+12% from last month</Badge>
             </div>
           </CardContent>
         </Card>
@@ -165,21 +190,22 @@ export default function ManageUsersPage() {
         <CardHeader className="border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4 py-8 px-8">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-            <Input 
-              placeholder="Search users..." 
+            <Input
+              placeholder="Search users..."
               className="pl-12 h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20 transition-all text-sm font-medium"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="flex items-center gap-3">
-             <Button variant="outline" className="rounded-2xl border-gray-100 h-12 px-5 flex items-center gap-2 font-bold text-gray-600 hover:bg-gray-50">
-               <Filter size={18} />
-               <span>Filters</span>
-             </Button>
+            <Button variant="outline" className="rounded-2xl border-gray-100 h-12 px-5 flex items-center gap-2 font-bold text-gray-600 hover:bg-gray-50">
+              <Filter size={18} />
+              <span>Filters</span>
+            </Button>
           </div>
         </CardHeader>
-        <div className="overflow-x-scroll scrollbar-primary pb-6">
+        {/* Desktop View */}
+        <div className="hidden md:block overflow-x-scroll scrollbar-primary pb-6">
           <table className="w-full text-left min-w-[800px]">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-50">
@@ -230,22 +256,22 @@ export default function ManageUsersPage() {
                   </td>
                   <td className="px-8 py-6 text-right">
                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => setEditingUser(user)}
-                            className="h-10 w-10 rounded-xl text-secondary hover:bg-secondary/5"
-                        >
-                            <Edit2 size={18} />
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="h-10 w-10 rounded-xl text-red-500 hover:bg-red-50"
-                        >
-                            <Trash2 size={18} />
-                        </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setEditingUser(user)}
+                        className="h-10 w-10 rounded-xl text-secondary hover:bg-secondary/5"
+                      >
+                        <Edit2 size={18} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="h-10 w-10 rounded-xl text-red-500 hover:bg-red-50"
+                      >
+                        <Trash2 size={18} />
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -253,88 +279,157 @@ export default function ManageUsersPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden space-y-4 p-4">
+          {filteredUsers.map((user) => (
+            <div key={user.id} className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 flex flex-col gap-4">
+              {/* Header: Avatar, Name, Role */}
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-lg">
+                    {user.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div>
+                    <div className="font-bold text-slate-900 text-base">{user.name}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{user.email}</div>
+                  </div>
+                </div>
+                <Badge className={cn(
+                  "rounded-xl px-3 py-1 font-bold text-[10px] border-none",
+                  user.role === 'admin' ? "bg-secondary text-white" : "bg-primary/10 text-primary"
+                )}>
+                  {user.role}
+                </Badge>
+              </div>
+
+              {/* Locations */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assignments</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {user.assignedLocations.map(loc => (
+                    <Badge key={loc} variant="outline" className="bg-white text-secondary border-gray-200 text-[10px] font-bold rounded-lg px-2 py-1">
+                      {loc}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer: Status + Actions */}
+              <div className="flex items-center justify-between pt-4 border-t border-gray-200/60 transition-all">
+                <div className="flex items-center gap-2">
+                  <div className={cn("h-2 w-2 rounded-full", user.status === 'active' ? "bg-emerald-500 animate-pulse" : "bg-gray-300")} />
+                  <span className="text-xs font-bold text-secondary capitalize">{user.status}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditingUser(user)}
+                    className="h-9 w-9 rounded-xl text-secondary hover:bg-secondary/10"
+                  >
+                    <Edit2 size={16} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteUser(user.id)}
+                    className="h-9 w-9 rounded-xl text-red-500 hover:bg-red-50"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-10 text-muted-foreground text-sm">
+              No users found.
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* Add User Modal */}
       {isAddModalOpen && (
-          <div className="fixed inset-0 bg-secondary/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-              <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden animate-in zoom-in duration-300">
-                  <CardHeader className="bg-primary text-white py-6">
-                      <div className="flex justify-between items-center">
-                          <CardTitle className="text-xl font-black tracking-tight">Add New Member</CardTitle>
-                          <Button variant="ghost" size="icon" onClick={() => setIsAddModalOpen(false)} className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
-                                <X size={20} />
-                          </Button>
-                      </div>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                      <form onSubmit={handleAddUser} className="space-y-6">
-                          <div className="space-y-2">
-                              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Full Name</label>
-                              <Input name="name" required placeholder="Enter full name" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
-                          </div>
-                          <div className="space-y-2">
-                              <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Email Address</label>
-                              <Input name="email" type="email" required placeholder="staff@soulparking.co.id" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Role</label>
-                                  <select name="role" className="w-full h-12 rounded-2xl bg-gray-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none">
-                                      <option value="staff">Staff</option>
-                                      <option value="admin">Admin</option>
-                                  </select>
-                              </div>
-                              <div className="space-y-2">
-                                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Locations</label>
-                                  <Input name="locations" required placeholder="Jakarta, Bandung" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
-                              </div>
-                          </div>
-                          <Button type="submit" className="w-full h-14 bg-secondary text-white rounded-2xl font-black text-lg shadow-xl shadow-secondary/10 hover:shadow-secondary/20 transition-all mt-4">
-                              Create Account
-                          </Button>
-                      </form>
-                  </CardContent>
-              </Card>
-          </div>
+        <div className="fixed inset-0 bg-secondary/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden animate-in zoom-in duration-300">
+            <CardHeader className="bg-primary text-white py-6">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl font-black tracking-tight">Add New Member</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setIsAddModalOpen(false)} className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
+                  <X size={20} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <form onSubmit={handleAddUser} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Full Name</label>
+                  <Input name="name" required placeholder="Enter full name" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Email Address</label>
+                  <Input name="email" type="email" required placeholder="staff@soulparking.co.id" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Role</label>
+                    <select name="role" className="w-full h-12 rounded-2xl bg-gray-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none">
+                      <option value="staff">Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest">Locations</label>
+                    <Input name="locations" required placeholder="Jakarta, Bandung" className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+                </div>
+                <Button type="submit" className="w-full h-14 bg-secondary text-white rounded-2xl font-black text-lg shadow-xl shadow-secondary/10 hover:shadow-secondary/20 transition-all mt-4">
+                  Create Account
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Edit User Modal */}
       {editingUser && (
-          <div className="fixed inset-0 bg-secondary/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-              <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden animate-in zoom-in duration-300">
-                  <CardHeader className="bg-secondary text-white py-6">
-                      <div className="flex justify-between items-center">
-                          <CardTitle className="text-xl font-black tracking-tight">Edit Details</CardTitle>
-                          <Button variant="ghost" size="icon" onClick={() => setEditingUser(null)} className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
-                                <X size={20} />
-                          </Button>
-                      </div>
-                  </CardHeader>
-                  <CardContent className="p-8">
-                      <form onSubmit={handleEditUser} className="space-y-6">
-                          <div className="space-y-2">
-                              <label className="text-xs font-black text-secondary uppercase tracking-widest">Full Name</label>
-                              <Input name="name" defaultValue={editingUser.name} required className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 font-bold" />
-                          </div>
-                          <div className="space-y-2">
-                              <label className="text-xs font-black text-secondary uppercase tracking-widest">Email Address</label>
-                              <Input name="email" defaultValue={editingUser.email} type="email" required className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 font-bold" />
-                          </div>
-                          <div className="space-y-2">
-                                <label className="text-xs font-black text-secondary uppercase tracking-widest">Role</label>
-                                <select name="role" defaultValue={editingUser.role} className="w-full h-12 rounded-2xl bg-gray-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-secondary/20 outline-none">
-                                    <option value="staff">Staff</option>
-                                    <option value="admin">Admin</option>
-                                </select>
-                          </div>
-                          <Button type="submit" className="w-full h-14 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all mt-4">
-                              Save Changes
-                          </Button>
-                      </form>
-                  </CardContent>
-              </Card>
-          </div>
+        <div className="fixed inset-0 bg-secondary/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden animate-in zoom-in duration-300">
+            <CardHeader className="bg-secondary text-white py-6">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl font-black tracking-tight">Edit Details</CardTitle>
+                <Button variant="ghost" size="icon" onClick={() => setEditingUser(null)} className="text-white hover:bg-white/20 rounded-full h-8 w-8 p-0">
+                  <X size={20} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <form onSubmit={handleEditUser} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-secondary uppercase tracking-widest">Full Name</label>
+                  <Input name="name" defaultValue={editingUser.name} required className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-secondary uppercase tracking-widest">Email Address</label>
+                  <Input name="email" defaultValue={editingUser.email} type="email" required className="h-12 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-secondary/20 font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-secondary uppercase tracking-widest">Role</label>
+                  <select name="role" defaultValue={editingUser.role} className="w-full h-12 rounded-2xl bg-gray-50 border-none px-4 text-sm font-bold focus:ring-2 focus:ring-secondary/20 outline-none">
+                    <option value="staff">Staff</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                <Button type="submit" className="w-full h-14 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/10 hover:shadow-primary/20 transition-all mt-4">
+                  Save Changes
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   )

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react"
 import type { DateRange } from "react-day-picker"
-import { addDays } from "date-fns"
+import { subDays } from "date-fns"
 
 interface DateFilterContextType {
   date: DateRange | undefined
@@ -11,8 +11,8 @@ const DateFilterContext = createContext<DateFilterContextType | undefined>(undef
 
 export function DateFilterProvider({ children }: { children: React.ReactNode }) {
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: addDays(new Date(), 7),
+    from: subDays(new Date(), 30),
+    to: new Date(),
   })
 
   return (

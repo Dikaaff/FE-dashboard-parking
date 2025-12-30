@@ -1,29 +1,49 @@
 import { DataTable } from "@/components/common/DataTable"
 import { columns, type Transaction } from "../components/transactions/columns"
 import { Button } from "@/components/ui/button"
-import { Download } from "lucide-react"
+import { Download, Car, Bike, Clock } from "lucide-react"
 import { downloadCSV } from "@/lib/export"
 import { DateRangePicker } from "@/components/common/DateRangePicker"
 import { useDateFilter } from "@/contexts/DateFilterContext"
 import { useMemo } from "react"
-import { format, subDays, subHours, isWithinInterval, parse } from "date-fns"
+import { format, subDays, subHours, subMinutes, isWithinInterval, parse } from "date-fns"
+import { Badge } from "@/components/ui/badge"
+import type { Row } from "@tanstack/react-table"
 
 const today = new Date();
-const dateStr = (days: number, hours: number) => format(subHours(subDays(today, days), hours), "yyyy-MM-dd HH:mm");
+const dateStr = (days: number, hours: number, minutes: number = 0) =>
+  format(subMinutes(subHours(subDays(today, days), hours), minutes), "yyyy-MM-dd HH:mm");
 
+// Hardcoded dummy data for testing
 const allData: Transaction[] = [
-  { id: "1", plateNumber: "B 1234 ABC", vehicleType: "Car", entryTime: dateStr(0, 5), exitTime: dateStr(0, 3), status: "Paid", amount: 15000 },
-  { id: "2", plateNumber: "B 5678 DEF", vehicleType: "Motorcycle", entryTime: dateStr(0, 4), exitTime: dateStr(0, 3), status: "Paid", amount: 2000 },
-  { id: "3", plateNumber: "B 9012 GHI", vehicleType: "Car", entryTime: dateStr(0, 4), exitTime: "", status: "Unpaid", amount: 0 },
-  { id: "4", plateNumber: "B 3456 JKL", vehicleType: "Motorcycle", entryTime: dateStr(1, 4), exitTime: dateStr(1, 1), status: "Paid", amount: 5000 },
-  { id: "5", plateNumber: "B 7890 MNO", vehicleType: "Bicycle", entryTime: dateStr(1, 3), exitTime: dateStr(1, 2), status: "Paid", amount: 1000 },
-  { id: "6", plateNumber: "D 1234 PQR", vehicleType: "Car", entryTime: dateStr(2, 6), exitTime: "", status: "Unpaid", amount: 0 },
-  { id: "7", plateNumber: "B 5678 STU", vehicleType: "Motorcycle", entryTime: dateStr(2, 5), exitTime: dateStr(2, 3), status: "Paid", amount: 3000 },
-  { id: "8", plateNumber: "AB 9012 VWX", vehicleType: "Car", entryTime: dateStr(3, 8), exitTime: dateStr(3, 4), status: "Paid", amount: 35000 },
-  { id: "9", plateNumber: "B 3456 YZ", vehicleType: "Motorcycle", entryTime: dateStr(3, 7), exitTime: "", status: "Unpaid", amount: 0 },
-  { id: "10", plateNumber: "B 1111 AA", vehicleType: "Car", entryTime: dateStr(4, 2), exitTime: dateStr(4, 1), status: "Paid", amount: 15000 },
-  { id: "11", plateNumber: "B 2222 BB", vehicleType: "Motorcycle", entryTime: dateStr(5, 5), exitTime: dateStr(5, 4), status: "Paid", amount: 2000 },
-]
+  {
+    id: "1",
+    plateNumber: "B 1234 CD",
+    vehicleType: "Car",
+    entryTime: dateStr(0, 2, 0), // Today, 2 hours ago
+    exitTime: dateStr(0, 1, 0), // Today, 1 hour ago
+    status: "Paid",
+    amount: 15000
+  },
+  {
+    id: "2",
+    plateNumber: "D 5678 EF",
+    vehicleType: "Motorcycle",
+    entryTime: dateStr(0, 4, 30), // Today, 4.5 hours ago
+    exitTime: "", // Still parked
+    status: "Unpaid",
+    amount: 0
+  },
+  {
+    id: "3",
+    plateNumber: "AD 9012 GH",
+    vehicleType: "Bicycle",
+    entryTime: dateStr(0, 1, 15), // Today, 1.25 hours ago
+    exitTime: dateStr(0, 0, 15), // Today, 15 mins ago
+    status: "Paid",
+    amount: 2000
+  }
+];
 
 export default function TransactionsPage() {
   const { date } = useDateFilter()
@@ -45,26 +65,81 @@ export default function TransactionsPage() {
     downloadCSV(filteredData, "transactions-" + new Date().toISOString().split('T')[0]);
   };
 
+  const renderMobileCard = (row: Row<Transaction>) => {
+    const t = row.original;
+    const formattedAmount = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0
+    }).format(t.amount);
+
+    return (
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-4">
+        <div className="flex items-start justify-between border-b border-dashed border-gray-100 pb-4">
+          <div className="flex items-center gap-3">
+            <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${t.vehicleType === 'Car' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+              {t.vehicleType === 'Car' ? <Car size={20} /> : <Bike size={20} />}
+            </div>
+            <div>
+              <div className="font-black text-lg text-slate-900 tracking-tight">{t.plateNumber}</div>
+              <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                {t.vehicleType}
+              </div>
+            </div>
+          </div>
+          <Badge variant={t.status === "Paid" ? "default" : "destructive"} className={`rounded-lg px-2.5 py-1 ${t.status === "Paid" ? "bg-emerald-500 hover:bg-emerald-600" : ""}`}>
+            {t.status}
+          </Badge>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Clock size={12} /> Entry Time
+            </div>
+            <div className="font-bold text-slate-700 text-sm">{t.entryTime}</div>
+          </div>
+          <div className="space-y-1 text-right">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-end gap-1.5">
+              <Clock size={12} /> Exit Time
+            </div>
+            <div className="font-bold text-slate-700 text-sm">{t.exitTime || "-"}</div>
+          </div>
+        </div>
+
+        <div className="pt-3 flex items-center justify-between">
+          <div className="text-xs text-slate-400 font-medium">Total Amount</div>
+          <div className="text-xl font-black text-slate-900">{formattedAmount}</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+    <div className="space-y-6 animate-in fade-in zoom-in duration-500 pb-20">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-           <h2 className="text-3xl font-bold tracking-tight text-primary">Transaction History</h2>
-           <p className="text-muted-foreground">Monitor real-time parking transactions.</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Transaction History</h2>
+          <p className="text-muted-foreground mt-1">Monitor real-time parking transactions and revenue.</p>
         </div>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center w-full sm:w-auto">
-            <DateRangePicker className="w-full sm:w-[280px]" />
-            <Button 
-                onClick={handleExport} 
-                className="gap-2 bg-primary text-white hover:bg-primary/90 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 h-12 rounded-2xl px-6 w-full sm:w-auto font-semibold"
-            >
-               <Download size={18} />
-               Export to Excel
-            </Button>
+          <DateRangePicker className="w-full sm:w-[280px]" />
+          <Button
+            onClick={handleExport}
+            className="gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-0.5 h-12 rounded-xl px-6 w-full sm:w-auto font-bold"
+          >
+            <Download size={18} />
+            Export
+          </Button>
         </div>
       </div>
 
-      <DataTable columns={columns} data={filteredData} searchKey="plateNumber" />
+      <DataTable
+        columns={columns}
+        data={filteredData}
+        searchKey="plateNumber"
+        renderMobileCard={renderMobileCard}
+      />
     </div>
   )
 }
